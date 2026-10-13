@@ -1,5 +1,11 @@
 # Same-Window Multi-Tab Parallel Automation (via stable `tab_id`)
 
+## Playbook（本仓库的方法论文档）
+- **[README](./README.md)** — 同窗多标签并行：用稳定 `tabId` 锁定标签（含实战踩坑）
+- **[agent-browser-cognition.md](./agent-browser-cognition.md)** — 浏览器操作 **46 条**认知：请求前决策 / 速率 / 熔断冷却 / 证据判定 / 会话保护
+- **[agent-web-testing-cognition.md](./agent-web-testing-cognition.md)** — 网页**测试与验证**认知：侦察先行 / 断言即证据 / 重放省模型 / 上下文经济性
+
+
 > How to let **multiple browser-automation tasks each lock onto one tab**
 > inside a **single Chrome window** (split view) and run in parallel —
 > instead of only ever driving the focused/active tab.
