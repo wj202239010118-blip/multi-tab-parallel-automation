@@ -72,5 +72,29 @@ push("EXECUTE_JS", {"code": "location.href"}, <window_id>, 15, tab_id=819949142)
 - So orchestrate parallel tabs behind a **shared per-domain rate limiter** (single lock + min interval) to keep the global cadence within a safe band.
 - On a block signal (e.g. HTTP 429 / Cloudflare 1015), **stop immediately** and back off.
 
+## Reliability stack (what actually fixed the intermittent failures)
+Layered by **runner → extension → backend**:
+
+**Runner side**
+1. **Bounded retry with backoff** on a failed read: 3 tries, 1.5/3/6s + jitter.
+2. **Result validation** — success requires `readyState === 'complete'` **and** non-empty **and** text length > a threshold (e.g. 200). Failing validation = failure → retry, **never silently skip**.
+3. **Classify empty vs timeout** — "acked but empty body" and "transport timeout" logged separately (otherwise root-causing stalls).
+4. **Dead-letter log** — exhausted retries append to a `dead-letter.jsonl` (slug / err / read_url / ts); never drop silently.
+5. **Slug normalization** — sites often normalize `-` ↔ `_`; compare after `re.sub(r"[-_]", "", s)`.
+6. **Once-scraped = done** — already-fetched items (incl. those with no data) are not re-fetched, avoiding loops.
+7. **Stall alarm** — output file not growing for > N minutes → alert (catches "running but producing nothing").
+
+**Extension side**
+8. **One in-flight command per tab** — if the tab already has an unfinished command, do **not** dispatch another (avoids CDP/debugger races → intermittent empty results).
+9. **Per-tab debugger session**; parallelism only *across* different tabs.
+
+**Backend / channel**
+10. **`command_id` end-to-end**; results routed strictly back to the issuing runner (no single "last result" slot).
+11. **Command queue persisted to disk** (`queue file` + one JSON per command + TTL) → survives process restart.
+12. **Auth**: loopback-only port + shared token (`X-Auth-Token`) + token file `chmod 600`.
+13. **Observability**: queue depth, per-tab in-flight, empty-result rate, dead-letter count, stall duration.
+
+> One line: **"response received" ≠ "read succeeded"**; every failure needs a class, a retry, and a dead-letter — never a silent drop.
+
 ## TL;DR
 > **Same-window multi-tab parallelism = add a `tab_id` channel and target tabs by stable `tabId` — never by URL or "the active tab".**
