@@ -5,6 +5,7 @@
 - **[extension-integration.md](./extension-integration.md)** — **新扩展接入指南**：`tabId` 定位 + 自刷新 + per-tab in-flight 的 4 处改动骨架
 - **[agent-browser-cognition.md](./agent-browser-cognition.md)** — 浏览器操作 **46 条**认知：请求前决策 / 速率 / 熔断冷却 / 证据判定 / 会话保护
 - **[agent-web-testing-cognition.md](./agent-web-testing-cognition.md)** — 网页**测试与验证**认知：侦察先行 / 断言即证据 / 重放省模型 / 上下文经济性
+- **[runner-ownership-and-self-healing.md](./runner-ownership-and-self-healing.md)** — **一个目标一个 runner**：按 id 认领标签 + 按 `windowId` 过滤 / 锚点不能被刚读到的 URL 覆盖 / 双守护互杀 / 自愈必须能停
 
 
 > How to let **multiple browser-automation tasks each lock onto one tab**
